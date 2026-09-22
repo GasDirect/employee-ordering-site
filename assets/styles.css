@@ -51,7 +51,7 @@ h1 { font-size: clamp(26px, 7vw, 40px); line-height: 1.05; }
 .search-wrap input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 16px; }
 .clear-search { border: 0; background: var(--surface-soft); color: var(--ink-2); width: 30px; height: 30px; border-radius: 50%; font-size: 20px; cursor: pointer; }
 
-.segmented { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; background: #e9ece8; border-radius: 14px; margin-top: 8px; }
+.segmented { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; background: #e9ece8; border-radius: 14px; margin-top: 8px; }
 .segment { min-height: 38px; border: 0; background: transparent; color: var(--ink-2); border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; }
 .segment.active { background: var(--surface); color: var(--brand-dark); box-shadow: 0 2px 8px rgba(23,56,76,.08); }
 

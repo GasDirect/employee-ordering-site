@@ -1,12 +1,25 @@
 {
   "appName": "Store Order Reference",
-  "subtitle": "Sam's Club + Walmart",
+  "subtitle": "Sam's Club + Walmart + Aldi",
   "recipientDisplay": "lpgasbilling@gmail.com",
   "stores": [
-    { "id": "south-60", "name": "South 60 Market" },
-    { "id": "state-street", "name": "State Street Market" },
-    { "id": "nashport-exxon", "name": "Nashport Exxon CPB" },
-    { "id": "other", "name": "Other / Not listed", "allowCustom": true }
+    {
+      "id": "south-60",
+      "name": "South 60 Market"
+    },
+    {
+      "id": "state-street",
+      "name": "State Street Market"
+    },
+    {
+      "id": "nashport-exxon",
+      "name": "Nashport Exxon CPB"
+    },
+    {
+      "id": "other",
+      "name": "Other / Not listed",
+      "allowCustom": true
+    }
   ],
   "backend": {
     "type": "google-apps-script",

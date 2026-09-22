@@ -1,7 +1,7 @@
 {
   "name": "Store Order Reference",
   "short_name": "Store Orders",
-  "description": "Sam's Club and Walmart product reference with employee order requests.",
+  "description": "Sam's Club, Walmart, and Aldi product reference with employee order requests.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

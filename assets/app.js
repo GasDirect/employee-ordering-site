@@ -138,7 +138,7 @@
   function hydrateConfig() {
     document.title = state.config.appName || 'Store Order Reference';
     el.appTitle.textContent = state.config.appName || 'Store Order Reference';
-    el.appSubtitle.textContent = state.config.subtitle || "Sam's Club + Walmart";
+    el.appSubtitle.textContent = state.config.subtitle || "Sam's Club + Walmart + Aldi";
     el.storeSelect.innerHTML = '<option value="">Select store…</option>' + (state.config.stores || []).map(store =>
       `<option value="${escapeAttr(store.id)}">${escapeHtml(store.name)}</option>`
     ).join('');
@@ -186,7 +186,7 @@
     const products = filteredProducts();
     el.resultCount.textContent = `${products.length} product${products.length === 1 ? '' : 's'}`;
     const bits = [];
-    if (state.retailer !== 'all') bits.push(state.retailer === 'sams' ? "Sam's Club" : 'Walmart');
+    if (state.retailer !== 'all') bits.push(retailerLabel(state.retailer));
     if (state.category !== 'all') bits.push(state.category);
     if (state.search) bits.push(`“${state.search}”`);
     el.filterSummary.textContent = bits.join(' · ');
@@ -204,13 +204,13 @@
 
   function renderCategory(category, products) {
     const byRetailer = groupBy(products, p => p.retailerKey);
-    const retailerOrder = ['sams','walmart'];
+    const retailerOrder = ['sams','walmart','aldi'];
     const retailerBlocks = retailerOrder.filter(key => byRetailer[key]).map(key => {
       const retailerProducts = byRetailer[key];
       const bySub = groupBy(retailerProducts, p => p.subcategory || '');
       const subOrder = [...new Set(retailerProducts.map(p => p.subcategory || ''))];
       const showRetailer = state.retailer === 'all';
-      return `${showRetailer ? `<div class="retailer-label">${key === 'sams' ? "Sam's Club" : 'Walmart'}</div>` : ''}
+      return `${showRetailer ? `<div class="retailer-label">${retailerLabel(key)}</div>` : ''}
         ${subOrder.map(sub => `${sub ? `<div class="subcategory-label">${escapeHtml(sub)}</div>` : ''}<div class="product-grid">${bySub[sub].map(renderProductCard).join('')}</div>`).join('')}`;
     }).join('');
 
@@ -359,7 +359,7 @@
       return;
     }
     const byRetailer = groupBy(selected, item => item.product.retailer);
-    const retailerOrder = ["Sam's Club", 'Walmart'];
+    const retailerOrder = ["Sam's Club", 'Walmart', 'Aldi'];
     el.reviewGroups.innerHTML = retailerOrder.filter(r => byRetailer[r]).map(retailer => {
       const byCategory = groupBy(byRetailer[retailer], item => item.product.category);
       const cats = state.categories.filter(c => byCategory[c]);
@@ -606,6 +606,10 @@
       (acc[key] ||= []).push(item);
       return acc;
     }, {});
+  }
+
+  function retailerLabel(key) {
+    return ({ sams: "Sam's Club", walmart: 'Walmart', aldi: 'Aldi' })[key] || key;
   }
 
   function categoryId(category) {

@@ -58,3 +58,14 @@ After deployment, perform one final live test:
 - **PASS:** added 28 new Sam's Club products and grouped them into appropriate existing/new subcategories.
 - **PASS:** no duplicate product IDs or duplicate product signatures.
 - **PASS:** external Sam's Club CDN image URLs are supported by the frontend and content-security policy.
+
+
+## Aldi retailer update — September 22, 2026
+
+- **PASS:** catalog contains 176 active products: 121 Sam's Club + 40 Walmart + 15 Aldi.
+- **PASS:** Aldi retailer tab is available alongside All, Sam's Club, and Walmart.
+- **PASS:** Aldi products are grouped under Milk & refrigerated, Produce, and Meat & poultry.
+- **PASS:** all 15 supplied Aldi products include the supplied product image URL and Aldi product number from the product link.
+- **PASS:** frontend retailer ordering, filter summary, and order review support Aldi.
+- **PASS:** Google Apps Script retailer validation accepts Aldi and the email disclaimer includes Aldi.
+- **PASS:** service-worker cache version bumped for the retailer update.

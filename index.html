@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#f7f4ee">
   <meta name="robots" content="noindex, nofollow, noarchive">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https://i5.samsclubimages.com; style-src 'self'; script-src 'self'; connect-src 'self'; form-action https://script.google.com https://script.googleusercontent.com; frame-src 'self' https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'none'">
-  <meta name="description" content="Mobile-first Sam's Club and Walmart product reference and employee order request app.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https://i5.samsclubimages.com https://www.instacart.com https://d2lnr5mha7bycj.cloudfront.net; style-src 'self'; script-src 'self'; connect-src 'self'; form-action https://script.google.com https://script.googleusercontent.com; frame-src 'self' https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'none'">
+  <meta name="description" content="Mobile-first Sam's Club, Walmart, and Aldi product reference and employee order request app.">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./assets/icons/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
@@ -22,7 +22,7 @@
       <div>
         <p class="eyebrow">EMPLOYEE PRODUCT REFERENCE</p>
         <h1 id="appTitle">Store Order Reference</h1>
-        <p class="subtitle" id="appSubtitle">Sam's Club + Walmart</p>
+        <p class="subtitle" id="appSubtitle">Sam's Club + Walmart + Aldi</p>
       </div>
       <button class="icon-button info-button" id="infoButton" type="button" aria-label="About this catalog">i</button>
     </div>
@@ -40,6 +40,7 @@
       <button class="segment active" type="button" data-retailer="all" aria-pressed="true">All</button>
       <button class="segment" type="button" data-retailer="sams" aria-pressed="false">Sam's Club</button>
       <button class="segment" type="button" data-retailer="walmart" aria-pressed="false">Walmart</button>
+      <button class="segment" type="button" data-retailer="aldi" aria-pressed="false">Aldi</button>
     </div>
 
     <nav class="category-strip" id="categoryStrip" aria-label="Jump to category"></nav>
@@ -155,8 +156,8 @@
         </div>
         <button class="icon-button" id="closeInfo" type="button" aria-label="Close catalog info">×</button>
       </div>
-      <p>Prices are reference prices recorded September 21, 2026 and may change. Product availability may also change.</p>
-      <p>Use search and category filters to find products quickly. The order panel is for sending an internal request—it does not place an order with Sam's Club or Walmart.</p>
+      <p>Prices are reference prices recorded on the dates in the catalog and may change. Product availability may also change.</p>
+      <p>Use search and category filters to find products quickly. The order panel is for sending an internal request—it does not place an order with Sam's Club, Walmart, or Aldi.</p>
     </section>
   </div>
 

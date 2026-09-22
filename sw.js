@@ -1,4 +1,4 @@
-const VERSION = 'store-order-v2-2026-09-21';
+const VERSION = 'store-order-v3-2026-09-22-aldi';
 const SHELL = [
   './', './index.html', './assets/styles.css', './assets/app.js',
   './data/config.json', './data/products.json', './manifest.webmanifest',

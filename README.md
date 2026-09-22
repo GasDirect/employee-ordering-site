@@ -1,6 +1,6 @@
 # Store Order Reference
 
-A mobile-first employee product reference and internal order-request website for the supplied Sam's Club and Walmart catalogs.
+A mobile-first employee product reference and internal order-request website for the supplied Sam's Club, Walmart, and Aldi catalogs.
 
 ## Recommended architecture
 
@@ -22,7 +22,7 @@ For this internal app, Apps Script is the best balance of cost, simplicity, secu
 
 ## What is included
 
-- 161 products total: 121 Sam's Club + 40 Walmart.
+- 176 products total: 121 Sam's Club + 40 Walmart + 15 Aldi.
 - Product photos from the supplied reference PDFs plus the Sam's Club product images supplied for later catalog additions.
 - All active products currently have a product photo.
 - Search by name, brand, item number, category, pack size, or variety.
@@ -240,4 +240,4 @@ When hosted over HTTPS, the app registers `sw.js` and can be installed to a phon
 
 ## Source notes
 
-The product catalog was built from the supplied Sam's Club and Walmart reference PDFs. Prices are the supplied reference prices recorded September 21, 2026, not live retailer pricing.
+The product catalog was built from the supplied Sam's Club and Walmart reference PDFs plus the supplied Aldi item list. Sam's Club and Walmart reference prices were recorded September 21, 2026; Aldi reference prices were supplied September 22, 2026. Prices are not live retailer pricing.

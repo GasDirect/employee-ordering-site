@@ -78,7 +78,7 @@ function validatePayload(p) {
   if (!Array.isArray(p.items) || p.items.length < 1 || p.items.length > MAX_ITEMS) throw new Error('Select at least one valid product.');
   p.items.forEach(item => {
     if (!clean(item.productName, 180)) throw new Error('A selected product is missing its name.');
-    if (!['Sam\'s Club','Walmart'].includes(clean(item.retailer, 40))) throw new Error('Invalid retailer.');
+    if (!['Sam\'s Club','Walmart','Aldi'].includes(clean(item.retailer, 40))) throw new Error('Invalid retailer.');
     const qty = Number(item.quantity);
     if (!Number.isInteger(qty) || qty < 1 || qty > MAX_QTY) throw new Error('A product has an invalid quantity.');
     clean(item.note, 300);
@@ -163,7 +163,7 @@ function buildEmail(p) {
     '<tr><td style="padding:2px 16px 2px 0"><b>Received</b></td><td>' + esc(received) + '</td></tr></table>' +
     (notes ? '<div style="margin-top:12px;padding:10px 12px;border-radius:10px;background:#fff"><b>General notes:</b><br>' + esc(notes).replace(/\n/g,'<br>') + '</div>' : '') +
     '</div>' + htmlSections.join('') +
-    '<p style="margin-top:24px;font-size:11px;color:#81909a">This is an internal order request. It does not place an order with Sam\'s Club or Walmart.</p>' +
+    '<p style="margin-top:24px;font-size:11px;color:#81909a">This is an internal order request. It does not place an order with Sam\'s Club, Walmart, or Aldi.</p>' +
     '</div>';
 
   const text = 'ORDER REQUEST\nStore: ' + store + '\nEmployee: ' + employee + '\nSubmitted: ' + (submittedLocal || received) + (timeZone ? ' (' + timeZone + ')' : '') + '\nReceived: ' + received + (notes ? '\nGeneral notes: ' + notes : '') + '\n' + textSections.join('\n');
