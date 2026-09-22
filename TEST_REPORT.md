@@ -49,3 +49,12 @@ After deployment, perform one final live test:
 3. Send the request.
 4. Confirm it arrives at `lpgasbilling@gmail.com`.
 5. Immediately submit the same unchanged request again and verify duplicate protection reports it as already received instead of sending a second email.
+
+## Catalog update validation — September 21, 2026 (later update)
+
+- **PASS:** expanded catalog contains 161 active products: 121 Sam's Club + 40 Walmart.
+- **PASS:** removed Sparkling Ice Purple Variety Pack and Clorox Toilet Bowl Cleaner + Bleach - Rain Clean.
+- **PASS:** all active products now have a product photo reference.
+- **PASS:** added 28 new Sam's Club products and grouped them into appropriate existing/new subcategories.
+- **PASS:** no duplicate product IDs or duplicate product signatures.
+- **PASS:** external Sam's Club CDN image URLs are supported by the frontend and content-security policy.

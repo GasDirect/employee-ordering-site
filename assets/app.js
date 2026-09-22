@@ -118,12 +118,12 @@
     el.infoButton.addEventListener('click', () => el.infoModal.hidden = false);
     el.closeInfo.addEventListener('click', () => el.infoModal.hidden = true);
     el.infoModal.addEventListener('click', event => { if (event.target === el.infoModal) el.infoModal.hidden = true; });
-    el.successModal.addEventListener('click', event => { if (event.target === el.successModal) el.successModal.hidden = true; });
+    el.successModal.addEventListener('click', event => { if (event.target === el.successModal) startNewRequest(); });
     window.addEventListener('message', handleBackendMessage);
     document.addEventListener('keydown', event => {
       if (event.key !== 'Escape') return;
       if (!el.infoModal.hidden) el.infoModal.hidden = true;
-      else if (!el.successModal.hidden) el.successModal.hidden = true;
+      else if (!el.successModal.hidden) startNewRequest();
       else if (!el.orderDrawer.hidden) closeDrawer();
     });
   }
@@ -224,7 +224,7 @@
     const cartItem = state.cart[product.id];
     const selected = Boolean(cartItem);
     const image = product.image
-      ? `<img class="product-image" src="./${escapeAttr(product.image)}" alt="" loading="lazy" width="256" height="256">`
+      ? `<img class="product-image" src="${escapeAttr(productImageSrc(product.image))}" alt="" loading="lazy" width="256" height="256">`
       : `<div class="product-placeholder" aria-hidden="true">No photo supplied</div>`;
     const priceNote = product.priceNote ? `<div class="price-note">${escapeHtml(product.priceNote)}</div>` : '';
     const stock = product.availability ? `<span class="stock-note">${escapeHtml(product.availability)}</span>` : '';
@@ -247,7 +247,7 @@
     return `<article class="product-card ${selected ? 'selected' : ''}" data-product-id="${product.id}">
       <div class="product-image-wrap">${image}</div>
       <div class="product-main">
-        <div class="product-brand">${escapeHtml(product.brand)}</div>
+        ${product.brand ? `<div class="product-brand">${escapeHtml(product.brand)}</div>` : ''}
         <h3 class="product-name">${escapeHtml(product.productName)}</h3>
         ${variety}${sourceNote}
         <div class="product-meta">
@@ -372,7 +372,7 @@
 
   function renderReviewItem(item) {
     const p = item.product;
-    const image = p.image ? `<img class="review-thumb" src="./${escapeAttr(p.image)}" alt="" loading="lazy">` : `<div class="review-thumb-placeholder">No photo</div>`;
+    const image = p.image ? `<img class="review-thumb" src="${escapeAttr(productImageSrc(p.image))}" alt="" loading="lazy">` : `<div class="review-thumb-placeholder">No photo</div>`;
     return `<div class="review-item" data-review-id="${p.id}">
       ${image}
       <div>
@@ -621,6 +621,12 @@
   }
 
   function escapeAttr(value) { return escapeHtml(value); }
+
+  function productImageSrc(value) {
+    const src = String(value || '').trim();
+    if (/^https?:\/\//i.test(src)) return src;
+    return `./${src.replace(/^\.?\//, '')}`;
+  }
 
   function uuid() {
     if (crypto?.randomUUID) return crypto.randomUUID();

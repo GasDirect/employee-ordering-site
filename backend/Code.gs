@@ -185,8 +185,18 @@ function groupItems(items) {
 
 function callback(data) {
   const safeJson = JSON.stringify(data).replace(/</g, '\\u003c');
+
   return HtmlService.createHtmlOutput(
-    '<!doctype html><meta charset="utf-8"><script>parent.postMessage(' + safeJson + ',"*");<\/script>'
+    '<!doctype html>' +
+    '<html><head><meta charset="utf-8"></head><body>' +
+    '<script>' +
+    '(function(){' +
+    'var data=' + safeJson + ';' +
+    'try { window.top.postMessage(data, "*"); } catch(e) {}' +
+    'try { window.parent.postMessage(data, "*"); } catch(e) {}' +
+    '})();' +
+    '<\/script>' +
+    '</body></html>'
   ).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 

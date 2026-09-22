@@ -22,9 +22,9 @@ For this internal app, Apps Script is the best balance of cost, simplicity, secu
 
 ## What is included
 
-- 135 products total: 95 Sam's Club + 40 Walmart.
-- Product photos extracted from the supplied reference PDFs where a photo was present.
-- Four products correctly use a "No photo supplied" placeholder because the source reference did not contain an image for them.
+- 161 products total: 121 Sam's Club + 40 Walmart.
+- Product photos from the supplied reference PDFs plus the Sam's Club product images supplied for later catalog additions.
+- All active products currently have a product photo.
 - Search by name, brand, item number, category, pack size, or variety.
 - Retailer filters and category jump controls.
 - Mobile product cards with Add, quantity controls, and per-product notes.

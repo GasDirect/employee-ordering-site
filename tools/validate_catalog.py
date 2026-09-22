@@ -18,7 +18,7 @@ required=['retailer','category','brand','productName','packCount','priceDisplay'
 for p in products:
     for key in required:
         if key not in p: errors.append(f"{p.get('id')}: missing {key}")
-    if p.get('image'):
+    if p.get('image') and not str(p['image']).startswith(('https://','http://')):
         path=os.path.join(ROOT,p['image'])
         if not os.path.isfile(path): errors.append(f"{p['id']}: missing image {p['image']}")
 
