@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f4ee">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; form-action https://script.google.com https://script.googleusercontent.com; frame-src 'self' https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'none'">
+  <meta name="description" content="Mobile-first Sam's Club and Walmart product reference and employee order request app.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
+  <link rel="stylesheet" href="./assets/styles.css">
+  <title>Store Order Reference</title>
+</head>
+<body>
+  <a class="skip-link" href="#catalog">Skip to products</a>
+
+  <header class="app-header">
+    <div class="brand-row">
+      <div>
+        <p class="eyebrow">EMPLOYEE PRODUCT REFERENCE</p>
+        <h1 id="appTitle">Store Order Reference</h1>
+        <p class="subtitle" id="appSubtitle">Sam's Club + Walmart</p>
+      </div>
+      <button class="icon-button info-button" id="infoButton" type="button" aria-label="About this catalog">i</button>
+    </div>
+  </header>
+
+  <div class="sticky-tools" id="stickyTools">
+    <div class="search-wrap">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m1.35-5.65A7 7 0 1 1 4 11a7 7 0 0 1 14 0Z"/></svg>
+      <label class="sr-only" for="searchInput">Search products or brands</label>
+      <input id="searchInput" type="search" inputmode="search" autocomplete="off" placeholder="Search product, brand, item #...">
+      <button id="clearSearch" class="clear-search" type="button" aria-label="Clear search" hidden>×</button>
+    </div>
+
+    <div class="segmented" id="retailerFilters" aria-label="Filter by retailer">
+      <button class="segment active" type="button" data-retailer="all" aria-pressed="true">All</button>
+      <button class="segment" type="button" data-retailer="sams" aria-pressed="false">Sam's Club</button>
+      <button class="segment" type="button" data-retailer="walmart" aria-pressed="false">Walmart</button>
+    </div>
+
+    <nav class="category-strip" id="categoryStrip" aria-label="Jump to category"></nav>
+  </div>
+
+  <main id="catalog" class="catalog" tabindex="-1">
+    <div class="catalog-summary">
+      <div>
+        <strong id="resultCount">Loading catalog…</strong>
+        <span id="filterSummary"></span>
+      </div>
+      <button class="text-button" id="resetFilters" type="button" hidden>Reset filters</button>
+    </div>
+    <div id="catalogContent" aria-live="polite"></div>
+  </main>
+
+  <button id="cartButton" class="cart-button" type="button" aria-haspopup="dialog" aria-controls="orderDrawer">
+    <span class="cart-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20.4 8H7M10 20h.01M17 20h.01"/></svg>
+    </span>
+    <span class="cart-copy">
+      <strong>Review order</strong>
+      <small id="cartSummary">No products selected</small>
+    </span>
+    <span class="cart-badge" id="cartBadge">0</span>
+  </button>
+
+  <div id="drawerBackdrop" class="drawer-backdrop" hidden></div>
+  <section id="orderDrawer" class="order-drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" hidden>
+    <div class="drawer-handle" aria-hidden="true"></div>
+    <div class="drawer-header">
+      <div>
+        <p class="eyebrow">ORDER REQUEST</p>
+        <h2 id="drawerTitle">Review your order</h2>
+      </div>
+      <button class="icon-button" id="closeDrawer" type="button" aria-label="Close order panel">×</button>
+    </div>
+
+    <div class="drawer-body">
+      <section class="form-section employee-section" aria-labelledby="employeeHeading">
+        <div class="section-heading-row">
+          <h3 id="employeeHeading">Employee information</h3>
+          <span class="required-note">Required</span>
+        </div>
+
+        <div class="field-grid">
+          <label class="field">
+            <span>Store location</span>
+            <select id="storeSelect" required>
+              <option value="">Select store…</option>
+            </select>
+          </label>
+
+          <label class="field" id="customStoreField" hidden>
+            <span>Store name</span>
+            <input id="customStore" type="text" maxlength="80" autocomplete="organization" placeholder="Enter store name">
+          </label>
+
+          <label class="field">
+            <span>Employee name</span>
+            <input id="employeeName" type="text" maxlength="80" autocomplete="name" placeholder="Your name" required>
+          </label>
+
+          <label class="field full-field">
+            <span>General notes <em>optional</em></span>
+            <textarea id="generalNotes" rows="3" maxlength="1000" placeholder="Anything the buyer should know?"></textarea>
+          </label>
+        </div>
+
+        <label class="honeypot" aria-hidden="true">
+          Company website
+          <input id="websiteField" type="text" tabindex="-1" autocomplete="off">
+        </label>
+      </section>
+
+      <section class="form-section" aria-labelledby="selectedHeading">
+        <div class="section-heading-row">
+          <h3 id="selectedHeading">Selected products</h3>
+          <button class="text-button danger-text" id="clearOrder" type="button">Clear order</button>
+        </div>
+        <div id="emptyOrder" class="empty-order">
+          <div class="empty-icon">+</div>
+          <strong>No products selected yet</strong>
+          <p>Close this panel and tap <b>Add</b> on any product.</p>
+        </div>
+        <div id="reviewGroups"></div>
+      </section>
+
+      <div id="submissionStatus" class="submission-status" role="status" aria-live="polite" hidden></div>
+
+      <div class="send-area">
+        <p class="send-help" id="sendHelp">Your request will be emailed to <strong>lpgasbilling@gmail.com</strong>.</p>
+        <button id="sendOrder" class="primary-button" type="button">Send Order Request</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="successModal" class="modal-backdrop" hidden>
+    <section class="success-card" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+      <div class="success-check" aria-hidden="true">✓</div>
+      <h2 id="successTitle">Order request sent</h2>
+      <p id="successMessage">Your order request was emailed successfully.</p>
+<button id="newRequest" class="primary-button" type="button">
+  Back to Product List
+</button>
+    </section>
+  </div>
+
+  <div id="infoModal" class="modal-backdrop" hidden>
+    <section class="info-card" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+      <div class="modal-topline">
+        <div>
+          <p class="eyebrow">CATALOG INFO</p>
+          <h2 id="infoTitle">About this reference</h2>
+        </div>
+        <button class="icon-button" id="closeInfo" type="button" aria-label="Close catalog info">×</button>
+      </div>
+      <p>Prices are reference prices recorded September 21, 2026 and may change. Product availability may also change.</p>
+      <p>Use search and category filters to find products quickly. The order panel is for sending an internal request—it does not place an order with Sam's Club or Walmart.</p>
+    </section>
+  </div>
+
+  <iframe id="submissionFrame" name="submissionFrame" title="Order submission transport" hidden></iframe>
+  <form id="submissionForm" method="post" target="submissionFrame" hidden>
+    <input type="hidden" name="payload" id="submissionPayload">
+  </form>
+
+  <noscript>
+    <div class="noscript">This ordering reference requires JavaScript.</div>
+  </noscript>
+
+  <script src="./assets/app.js" defer></script>
+</body>
+</html>
