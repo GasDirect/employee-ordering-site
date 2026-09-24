@@ -1,5 +1,5 @@
 {
-  "version": "2026-09-24-214923-admin",
+  "version": "2026-09-24-215043-admin",
   "priceDisclaimer": "Prices are reference prices recorded on the dates shown in the catalog and may change.",
   "categories": [
     "Water",
@@ -3751,7 +3751,7 @@
       "retailerKey": "aldi",
       "priceAsOf": "2026-09-22",
       "active": true,
-      "availability": "Test edit",
+      "availability": "",
       "priceNote": "",
       "sourceNote": "",
       "id": "aldi-002",
