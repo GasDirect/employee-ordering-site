@@ -1,5 +1,5 @@
 {
-  "version": "2026-09-24-213845-admin",
+  "version": "2026-09-24-214846-admin",
   "priceDisclaimer": "Prices are reference prices recorded on the dates shown in the catalog and may change.",
   "categories": [
     "Water",
@@ -3751,12 +3751,12 @@
       "retailerKey": "aldi",
       "priceAsOf": "2026-09-22",
       "active": true,
-      "availability": "",
+      "availability": "Availability → Test edit",
       "priceNote": "",
       "sourceNote": "",
       "id": "aldi-002",
       "category": "Milk & refrigerated",
-      "sourceCategory": "Dairy",
+      "sourceCategory": "Milk & refrigerated",
       "subcategory": "Cultured dairy",
       "brand": "Friendly Farms",
       "productName": "Friendly Farms Sour Cream",
