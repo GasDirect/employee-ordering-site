@@ -1,5 +1,5 @@
 {
-  "version": "2026-09-24-215212-admin",
+  "version": "2026-09-24-215312-admin",
   "priceDisclaimer": "Prices are reference prices recorded on the dates shown in the catalog and may change.",
   "categories": [
     "Water",
@@ -4088,7 +4088,7 @@
       "sourceNote": "",
       "availability": "Test only",
       "image": "",
-      "active": true,
+      "active": false,
       "displayOrder": 177
     }
   ]
