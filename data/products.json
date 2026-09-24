@@ -1,5 +1,5 @@
 {
-  "version": "2026-09-24-215043-admin",
+  "version": "2026-09-24-215212-admin",
   "priceDisclaimer": "Prices are reference prices recorded on the dates shown in the catalog and may change.",
   "categories": [
     "Water",
@@ -4067,6 +4067,29 @@
       "priceDisplay": "$2.19",
       "image": "https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_fc59f9c4-8b81-4ca4-8804-4c8f69e506a7.jpg",
       "displayOrder": 176
+    },
+    {
+      "id": "aldi-016",
+      "retailer": "Aldi",
+      "retailerKey": "aldi",
+      "category": "Other items",
+      "sourceCategory": "Other items",
+      "subcategory": "Test",
+      "brand": "Test",
+      "productName": "ADMIN TEST PRODUCT",
+      "variety": "",
+      "packCount": "1",
+      "individualSize": "1 unit",
+      "productNumber": "TEST-001",
+      "price": null,
+      "priceDisplay": "",
+      "priceAsOf": "2026-09-24",
+      "priceNote": "",
+      "sourceNote": "",
+      "availability": "Test only",
+      "image": "",
+      "active": true,
+      "displayOrder": 177
     }
   ]
 }
