@@ -1,5 +1,5 @@
 {
-  "version": "2026-09-24-215312-admin",
+  "version": "2026-09-25-200421-admin",
   "priceDisclaimer": "Prices are reference prices recorded on the dates shown in the catalog and may change.",
   "categories": [
     "Water",
@@ -2593,7 +2593,7 @@
       "sourceNote": "",
       "availability": "",
       "image": "assets/products/walmart/walmart-030-ritz-toasted-chips-sour-cream-and-onion-crackers.webp",
-      "active": true,
+      "active": false,
       "displayOrder": 112
     },
     {
