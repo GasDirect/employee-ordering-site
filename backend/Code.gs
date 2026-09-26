@@ -6,6 +6,7 @@
  *   Who has access: Anyone
  *
  * The recipient is fixed server-side so the browser cannot redirect order emails.
+ * Product images are resolved server-side from the public GitHub catalog by product ID.
  * No password, Gmail credential, API key, or private key belongs in the website.
  */
 
@@ -16,6 +17,12 @@ const MAX_QTY = 999;
 const DUPLICATE_WINDOW_SECONDS = 600; // 10 minutes
 const RATE_WINDOW_SECONDS = 3600; // 1 hour
 const RATE_LIMIT_PER_CLIENT = 12;
+
+const CATALOG_URL = 'https://raw.githubusercontent.com/GasDirect/employee-ordering-site/main/data/products.json';
+const REPO_RAW_BASE = 'https://raw.githubusercontent.com/GasDirect/employee-ordering-site/main/';
+const MAX_INLINE_IMAGES = 40;
+const MAX_INLINE_IMAGE_BYTES = 1500000; // 1.5 MB per image
+const MAX_INLINE_IMAGE_TOTAL_BYTES = 12000000; // 12 MB total
 
 function doGet() {
   return HtmlService.createHtmlOutput('Store Order backend is running.');
@@ -40,13 +47,17 @@ function doPost(e) {
     }
 
     const mail = buildEmail(payload);
-    MailApp.sendEmail({
+    const message = {
       to: RECIPIENT,
       subject: mail.subject,
       body: mail.text,
       htmlBody: mail.html,
       name: 'Store Order Requests'
-    });
+    };
+    if (Object.keys(mail.inlineImages).length) {
+      message.inlineImages = mail.inlineImages;
+    }
+    MailApp.sendEmail(message);
 
     cache.put(duplicateKey, '1', DUPLICATE_WINDOW_SECONDS);
     return callback({ source: 'store-order-backend', ok: true, duplicate: false, requestId: requestId });
@@ -78,7 +89,7 @@ function validatePayload(p) {
   if (!Array.isArray(p.items) || p.items.length < 1 || p.items.length > MAX_ITEMS) throw new Error('Select at least one valid product.');
   p.items.forEach(item => {
     if (!clean(item.productName, 180)) throw new Error('A selected product is missing its name.');
-    if (!['Sam\'s Club','Walmart','Aldi'].includes(clean(item.retailer, 40))) throw new Error('Invalid retailer.');
+    if (!["Sam's Club",'Walmart','Aldi'].includes(clean(item.retailer, 40))) throw new Error('Invalid retailer.');
     const qty = Number(item.quantity);
     if (!Number.isInteger(qty) || qty < 1 || qty > MAX_QTY) throw new Error('A product has an invalid quantity.');
     clean(item.note, 300);
@@ -120,6 +131,10 @@ function buildEmail(p) {
   const dateForSubject = Utilities.formatDate(new Date(), TIME_ZONE, 'MMM d, yyyy');
   const subject = 'Order Request – ' + store + ' – ' + dateForSubject;
 
+  // Image URLs are never trusted from the employee browser. They are resolved
+  // from the server-fetched catalog using each selected product's catalog ID.
+  const imageData = prepareInlineImages(p.items);
+
   const grouped = groupItems(p.items);
   const htmlSections = [];
   const textSections = [];
@@ -132,19 +147,29 @@ function buildEmail(p) {
       htmlSections.push('<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse">');
       textSections.push('\n  ' + category);
       grouped[retailer][category].forEach(item => {
+        const id = clean(item.id, 80);
         const name = clean(item.productName, 180);
         const pack = [clean(item.packCount, 80), clean(item.individualSize, 80)].filter(Boolean).join(' / ');
         const productNumber = clean(item.productNumber, 80);
         const note = clean(item.note, 300);
+        const cid = imageData.cidById[id] || '';
+
+        const imageCell = cid
+          ? '<img src="cid:' + esc(cid) + '" alt="' + esc(name) + '" width="68" height="68" style="display:block;width:68px;height:68px;object-fit:contain;border:1px solid #e1e6e3;border-radius:10px;background:#ffffff">'
+          : '<div style="width:68px;height:68px;border:1px solid #e1e6e3;border-radius:10px;background:#f4f6f5;color:#98a5ad;font-size:10px;line-height:68px;text-align:center;white-space:nowrap">No image</div>';
+
         htmlSections.push(
           '<tr>' +
+          '<td width="78" style="width:78px;padding:10px 10px 10px 0;border-top:1px solid #dde4e1;vertical-align:top">' +
+          imageCell +
+          '</td>' +
           '<td style="padding:10px 8px 10px 0;border-top:1px solid #dde4e1;vertical-align:top">' +
-          '<div style="font-weight:700;color:#17384c">' + esc(name) + '</div>' +
-          (pack ? '<div style="font-size:12px;color:#61737f;margin-top:3px">' + esc(pack) + '</div>' : '') +
+          '<div style="font-weight:700;color:#17384c;font-size:14px;line-height:1.3">' + esc(name) + '</div>' +
+          (pack ? '<div style="font-size:12px;color:#61737f;margin-top:3px;line-height:1.35">' + esc(pack) + '</div>' : '') +
           (productNumber ? '<div style="font-size:12px;color:#81909a;margin-top:2px">Item # ' + esc(productNumber) + '</div>' : '') +
           (note ? '<div style="font-size:12px;color:#526777;margin-top:5px"><b>Note:</b> ' + esc(note) + '</div>' : '') +
           '</td>' +
-          '<td style="padding:10px 0;border-top:1px solid #dde4e1;vertical-align:top;text-align:right;white-space:nowrap">' +
+          '<td width="66" style="width:66px;padding:10px 0;border-top:1px solid #dde4e1;vertical-align:top;text-align:right;white-space:nowrap">' +
           '<span style="display:inline-block;background:#e7f3ef;color:#095d4f;border-radius:10px;padding:6px 9px;font-weight:800">Qty ' + Number(item.quantity) + '</span>' +
           '</td></tr>'
         );
@@ -168,7 +193,175 @@ function buildEmail(p) {
 
   const text = 'ORDER REQUEST\nStore: ' + store + '\nEmployee: ' + employee + '\nSubmitted: ' + (submittedLocal || received) + (timeZone ? ' (' + timeZone + ')' : '') + '\nReceived: ' + received + (notes ? '\nGeneral notes: ' + notes : '') + '\n' + textSections.join('\n');
 
-  return { subject: subject, html: html, text: text };
+  return { subject: subject, html: html, text: text, inlineImages: imageData.inlineImages };
+}
+
+/**
+ * Returns:
+ *   cidById: { "sams-003": "product_1_sams_003", ... }
+ *   inlineImages: { "product_1_sams_003": Blob, ... }
+ *
+ * A failure to load a catalog or image never blocks the order email. The row
+ * simply falls back to the "No image" tile.
+ */
+function prepareInlineImages(items) {
+  const result = { cidById: {}, inlineImages: {} };
+
+  let catalogMap;
+  try {
+    catalogMap = loadCatalogMap();
+  } catch (error) {
+    console.warn('Catalog image lookup failed: ' + error);
+    return result;
+  }
+
+  const seen = {};
+  const candidates = [];
+
+  items.forEach(item => {
+    if (candidates.length >= MAX_INLINE_IMAGES) return;
+    const id = clean(item.id, 80);
+    if (!id || seen[id]) return;
+    seen[id] = true;
+
+    const product = catalogMap[id];
+    if (!product || !product.image) return;
+
+    const url = catalogImageUrl(product.image);
+    if (!url) return;
+
+    candidates.push({ id: id, url: url });
+  });
+
+  if (!candidates.length) return result;
+
+  let responses;
+  try {
+    responses = UrlFetchApp.fetchAll(candidates.map(candidate => ({
+      url: candidate.url,
+      method: 'get',
+      followRedirects: true,
+      muteHttpExceptions: true,
+      headers: {
+        'User-Agent': 'Store-Order-Email/2.0'
+      }
+    })));
+  } catch (error) {
+    console.warn('Inline image batch fetch failed: ' + error);
+    return result;
+  }
+
+  let totalBytes = 0;
+
+  candidates.forEach((candidate, index) => {
+    try {
+      const response = responses[index];
+      const status = response.getResponseCode();
+      if (status < 200 || status >= 300) {
+        console.warn('Image fetch failed for ' + candidate.id + ': HTTP ' + status);
+        return;
+      }
+
+      const blob = response.getBlob();
+      const bytes = blob.getBytes().length;
+      if (!bytes || bytes > MAX_INLINE_IMAGE_BYTES) {
+        console.warn('Image skipped for ' + candidate.id + ': ' + bytes + ' bytes');
+        return;
+      }
+      if (totalBytes + bytes > MAX_INLINE_IMAGE_TOTAL_BYTES) {
+        console.warn('Inline image total-size cap reached.');
+        return;
+      }
+
+      const contentType = normalizedImageContentType(blob.getContentType(), candidate.url);
+      if (!contentType) {
+        console.warn('Non-image response skipped for ' + candidate.id);
+        return;
+      }
+
+      blob.setContentType(contentType);
+      blob.setName(candidate.id + imageExtensionForType(contentType));
+
+      const cid = 'product_' + (index + 1) + '_' + candidate.id.replace(/[^a-zA-Z0-9_-]/g, '_');
+      result.cidById[candidate.id] = cid;
+      result.inlineImages[cid] = blob;
+      totalBytes += bytes;
+    } catch (error) {
+      console.warn('Image processing failed for ' + candidate.id + ': ' + error);
+    }
+  });
+
+  return result;
+}
+
+function loadCatalogMap() {
+  const response = UrlFetchApp.fetch(CATALOG_URL, {
+    method: 'get',
+    followRedirects: true,
+    muteHttpExceptions: true,
+    headers: {
+      'User-Agent': 'Store-Order-Email/2.0',
+      'Cache-Control': 'no-cache'
+    }
+  });
+
+  const status = response.getResponseCode();
+  if (status < 200 || status >= 300) {
+    throw new Error('Catalog fetch returned HTTP ' + status + '.');
+  }
+
+  const payload = JSON.parse(response.getContentText());
+  if (!payload || !Array.isArray(payload.products)) {
+    throw new Error('Catalog response was invalid.');
+  }
+
+  const map = {};
+  payload.products.forEach(product => {
+    const id = String(product && product.id || '').trim();
+    if (id) map[id] = product;
+  });
+  return map;
+}
+
+function catalogImageUrl(imageValue) {
+  const value = String(imageValue || '').trim();
+  if (!value) return '';
+
+  // External URLs are trusted only because they came from the server-fetched
+  // GitHub catalog, never from the employee's submitted payload.
+  if (/^https:\/\//i.test(value)) return value;
+
+  // Repository-relative image path.
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(value) || value.indexOf('..') !== -1) {
+    return '';
+  }
+
+  const path = value.replace(/^\.?\//, '').replace(/^\/+/, '');
+  if (!/^assets\/products\//.test(path)) return '';
+  return REPO_RAW_BASE + encodeURI(path);
+}
+
+function normalizedImageContentType(contentType, url) {
+  const type = String(contentType || '').toLowerCase().split(';')[0].trim();
+  if (/^image\/(jpeg|jpg|png|gif|webp)$/.test(type)) {
+    return type === 'image/jpg' ? 'image/jpeg' : type;
+  }
+
+  const cleanUrl = String(url || '').split('?')[0].toLowerCase();
+  if (/\.jpe?g$/.test(cleanUrl)) return 'image/jpeg';
+  if (/\.png$/.test(cleanUrl)) return 'image/png';
+  if (/\.gif$/.test(cleanUrl)) return 'image/gif';
+  if (/\.webp$/.test(cleanUrl)) return 'image/webp';
+  return '';
+}
+
+function imageExtensionForType(contentType) {
+  return ({
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/gif': '.gif',
+    'image/webp': '.webp'
+  })[contentType] || '';
 }
 
 function groupItems(items) {
@@ -220,6 +413,6 @@ function digest(value) {
 function friendlyError(error) {
   const msg = String(error && error.message ? error.message : 'Unknown error');
   if (/Service invoked too many times|quota/i.test(msg)) return 'Email sending is temporarily unavailable because the daily email limit was reached. Your selections are still saved; try again later.';
-  if (/Authorization|permission/i.test(msg)) return 'The email backend needs authorization. Reopen the Apps Script project, authorize MailApp, and redeploy the web app.';
+  if (/Authorization|permission/i.test(msg)) return 'The email backend needs authorization. Reopen the Apps Script project, authorize MailApp and external requests, then redeploy the web app.';
   return msg.slice(0, 240);
 }
