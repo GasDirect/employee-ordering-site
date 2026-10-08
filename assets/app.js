@@ -8,6 +8,8 @@
     clientId: 'storeOrder.clientId.v1'
   };
 
+  const MAX_DRAFT_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
   const state = {
     config: null,
     catalog: [],
@@ -20,7 +22,7 @@
     submitting: false,
     requestId: null,
     submitTimer: null,
-    startedAt: Number(localStorage.getItem(STORAGE.startedAt)) || Date.now()
+    startedAt: 0
   };
 
   const el = {};
@@ -131,8 +133,26 @@
   function restoreLocalState() {
     try { state.cart = JSON.parse(localStorage.getItem(STORAGE.cart) || '{}') || {}; } catch { state.cart = {}; }
     try { state.employee = { ...state.employee, ...(JSON.parse(localStorage.getItem(STORAGE.identity) || '{}') || {}) }; } catch {}
+
     if (!localStorage.getItem(STORAGE.clientId)) localStorage.setItem(STORAGE.clientId, uuid());
-    if (!localStorage.getItem(STORAGE.startedAt)) localStorage.setItem(STORAGE.startedAt, String(state.startedAt));
+
+    const now = Date.now();
+    const savedStartedAt = Number(localStorage.getItem(STORAGE.startedAt)) || 0;
+    const hasCart = Object.keys(state.cart).length > 0;
+    const validStartedAt =
+      savedStartedAt > 0 &&
+      savedStartedAt <= now &&
+      now - savedStartedAt <= MAX_DRAFT_AGE_MS;
+
+    if (hasCart) {
+      // Preserve a current draft, but automatically renew legacy/stale
+      // timestamps so old browser storage cannot block a new submission.
+      state.startedAt = validStartedAt ? savedStartedAt : now;
+      localStorage.setItem(STORAGE.startedAt, String(state.startedAt));
+    } else {
+      state.startedAt = 0;
+      localStorage.removeItem(STORAGE.startedAt);
+    }
   }
 
   function hydrateConfig() {
@@ -290,8 +310,9 @@
   }
 
   function addToCart(id) {
+    const wasEmpty = !Object.keys(state.cart).length;
     if (!state.cart[id]) state.cart[id] = { quantity: 1, note: '', noteOpen: false };
-    markOrderStarted();
+    if (wasEmpty) markOrderStarted();
     persistCart();
     renderCatalog();
     renderCartSummary();
@@ -318,8 +339,8 @@
   }
 
   function markOrderStarted() {
-    if (!Object.keys(state.cart).length) state.startedAt = Date.now();
-    if (!localStorage.getItem(STORAGE.startedAt)) localStorage.setItem(STORAGE.startedAt, String(state.startedAt));
+    state.startedAt = Date.now();
+    localStorage.setItem(STORAGE.startedAt, String(state.startedAt));
   }
 
   function persistCart() {
@@ -561,8 +582,8 @@
   function startNewRequest() {
     state.cart = {};
     state.employee.notes = '';
-    state.startedAt = Date.now();
-    localStorage.setItem(STORAGE.startedAt, String(state.startedAt));
+    state.startedAt = 0;
+    localStorage.removeItem(STORAGE.startedAt);
     localStorage.setItem(STORAGE.cart, '{}');
     el.generalNotes.value = '';
     persistIdentityFromForm();
@@ -577,8 +598,8 @@
     if (!Object.keys(state.cart).length) return;
     if (!window.confirm('Clear all selected products from this order?')) return;
     state.cart = {};
-    state.startedAt = Date.now();
-    localStorage.setItem(STORAGE.startedAt, String(state.startedAt));
+    state.startedAt = 0;
+    localStorage.removeItem(STORAGE.startedAt);
     persistCart();
     renderCatalog();
     renderCartSummary();
