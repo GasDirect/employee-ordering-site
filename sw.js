@@ -1,6 +1,6 @@
-const VERSION = 'store-order-v3-2026-09-22-aldi';
+const VERSION = 'store-order-v4-2026-10-08-cachefix1';
 const SHELL = [
-  './', './index.html', './assets/styles.css', './assets/app.js',
+  './', './index.html', './assets/styles.css?v=2026-10-08-cachefix1', './assets/app.js?v=2026-10-08-cachefix1',
   './data/config.json', './data/products.json', './manifest.webmanifest',
   './assets/icons/icon-192.png', './assets/icons/icon-512.png'
 ];
@@ -24,7 +24,7 @@ self.addEventListener('fetch', event => {
 
   if (shouldRefresh) {
     event.respondWith(
-      fetch(event.request).then(response => {
+      fetch(event.request, { cache: 'no-store' }).then(response => {
         if (response.ok) caches.open(VERSION).then(cache => cache.put(event.request, response.clone()));
         return response;
       }).catch(() => caches.match(event.request).then(hit => hit || caches.match('./index.html')))

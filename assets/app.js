@@ -662,8 +662,19 @@
   }
 
   function registerServiceWorker() {
-    if ('serviceWorker' in navigator && location.protocol === 'https:') {
-      navigator.serviceWorker.register('./sw.js').catch(error => console.warn('Service worker registration failed:', error));
-    }
+    if (!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
+
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    let reloadingForUpdate = false;
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || reloadingForUpdate) return;
+      reloadingForUpdate = true;
+      window.location.reload();
+    });
+
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+      .then(registration => registration.update())
+      .catch(error => console.warn('Service worker registration failed:', error));
   }
 })();
