@@ -20,7 +20,7 @@ const RATE_LIMIT_PER_CLIENT = 12;
 
 const CATALOG_URL = 'https://raw.githubusercontent.com/GasDirect/employee-ordering-site/main/data/products.json';
 const REPO_RAW_BASE = 'https://raw.githubusercontent.com/GasDirect/employee-ordering-site/main/';
-const MAX_INLINE_IMAGES = 40;
+const MAX_INLINE_IMAGES = MAX_ITEMS;
 const MAX_INLINE_IMAGE_BYTES = 1500000; // 1.5 MB per image
 const MAX_INLINE_IMAGE_TOTAL_BYTES = 12000000; // 12 MB total
 
