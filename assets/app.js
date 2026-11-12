@@ -178,17 +178,19 @@
   }
 
   function filteredProducts(ignoreCategory = false) {
-    const query = normalize(state.search);
-    return state.catalog.filter(product => {
-      if (state.retailer !== 'all' && product.retailerKey !== state.retailer) return false;
-      if (!ignoreCategory && state.category !== 'all' && product.category !== state.category) return false;
-      if (!query) return true;
-      const haystack = normalize([
-        product.productName, product.brand, product.variety, product.productNumber, product.packCount,
-        product.individualSize, product.category, product.subcategory, product.sourceNote
-      ].filter(Boolean).join(' '));
-      return haystack.includes(query);
+    const query = window.StoreCatalogSearch.compile(state.search);
+    const matches = [];
+    state.catalog.forEach((product, index) => {
+      if (state.retailer !== 'all' && product.retailerKey !== state.retailer) return;
+      if (!ignoreCategory && state.category !== 'all' && product.category !== state.category) return;
+      const relevance = window.StoreCatalogSearch.score(product, query);
+      if (relevance > 0) matches.push({ product, relevance, index });
     });
+    // Preserve the existing catalog order when no search is active.
+    if (query.terms.length) {
+      matches.sort((a, b) => b.relevance - a.relevance || a.index - b.index);
+    }
+    return matches.map(match => match.product);
   }
 
   function renderCategoryStrip() {

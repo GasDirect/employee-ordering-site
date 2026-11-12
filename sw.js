@@ -1,6 +1,6 @@
-const VERSION = 'store-order-v4-2026-10-08-cachefix1';
+const VERSION = 'store-order-v5-2026-11-12-smartsearch1';
 const SHELL = [
-  './', './index.html', './assets/styles.css?v=2026-10-08-cachefix1', './assets/app.js?v=2026-10-08-cachefix1',
+  './', './index.html', './assets/styles.css?v=2026-10-08-cachefix1', './assets/search.js?v=2026-11-12-smartsearch1', './assets/app.js?v=2026-11-12-smartsearch1',
   './data/config.json', './data/products.json', './manifest.webmanifest',
   './assets/icons/icon-192.png', './assets/icons/icon-512.png'
 ];
