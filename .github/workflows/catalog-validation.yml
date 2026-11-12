@@ -33,3 +33,11 @@ jobs:
 
       - name: Validate catalog
         run: python3 tools/validate_catalog.py
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Test smart search against product catalog
+        run: node --test tests/search.test.cjs
