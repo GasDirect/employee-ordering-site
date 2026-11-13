@@ -72,10 +72,10 @@ test('Empty search leaves products available for normal browsing', () => {
 test('Brand typos recover only when ordinary search has no results', () => {
   assert.ok(includes('Gatoraid', 'sams-153'));
   assert.ok(includes('Gatoraid 24 pack', 'sams-154'));
-  assert.ok(includes('Monstor', 'sams-002'));
+  assert.ok(includes('Monstor', 'sams-033'));
   assert.ok(find('Monstor').some(p => p.brand === 'Monster'));
   assert.ok(find('Pepsy').some(p => p.brand === 'Pepsi'));
-  assert.ok(includes('Mnoster', 'sams-002')); // adjacent transposition
+  assert.ok(includes('Mnoster', 'sams-033')); // adjacent transposition
   assert.equal(search.resolve('Gatoraid', products).correction?.to, 'gatorade');
 });
 
