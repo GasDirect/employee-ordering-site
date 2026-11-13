@@ -1,7 +1,7 @@
 /*
  * Lightweight, offline-capable product search.
- * Phase 1: brand nicknames, pack/size equivalents, and order-independent words.
- * No fuzzy spelling correction or external services.
+ * Brand aliases, pack/size equivalents, order-independent words, and
+ * conservative typo recovery. Runs locally; no network or paid services.
  */
 (function (root) {
   'use strict';
@@ -136,7 +136,102 @@
     return rank;
   }
 
-  const api = Object.freeze({ compile, score, normalize });
+
+  // Candidate words come only from actual product names and brands. This is
+  // deliberate: arbitrary dictionary spelling guesses can create wrong orders.
+  const vocabularyCache = new WeakMap();
+
+  function vocabulary(products) {
+    if (vocabularyCache.has(products)) return vocabularyCache.get(products);
+    const words = new Map();
+    for (const p of products) {
+      if (p.active === false) continue;
+      for (const w of tokens(p.brand, false)) {
+        if (/^[a-z]{5,}$/.test(w)) words.set(w, { brand: true });
+      }
+      for (const w of tokens([p.productName, p.variety].filter(Boolean).join(' '), false)) {
+        if (!/^[a-z]{6,}$/.test(w)) continue;
+        if (!words.has(w)) words.set(w, { brand: false });
+      }
+    }
+    vocabularyCache.set(products, words);
+    return words;
+  }
+
+  // Restricted Damerau-Levenshtein: insertion, deletion, substitution and
+  // an adjacent character swap. Small strings; only called after zero matches.
+  function typoDistance(a, b, limit) {
+    if (Math.abs(a.length - b.length) > limit) return limit + 1;
+    const rows = [];
+    for (let i = 0; i <= a.length; i++) {
+      const row = new Array(b.length + 1);
+      row[0] = i;
+      rows.push(row);
+    }
+    for (let j = 0; j <= b.length; j++) rows[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      let minimum = limit + 1;
+      for (let j = 1; j <= b.length; j++) {
+        rows[i][j] = Math.min(
+          rows[i - 1][j] + 1,
+          rows[i][j - 1] + 1,
+          rows[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+        );
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+          rows[i][j] = Math.min(rows[i][j], rows[i - 2][j - 2] + 1);
+        }
+        minimum = Math.min(minimum, rows[i][j]);
+      }
+      if (minimum > limit) return limit + 1;
+    }
+    return rows[a.length][b.length];
+  }
+
+  // A spelling correction is applied ONLY when the normal search has no
+  // results. Correct at most one word and only to a unique, plausible product
+  // word. Package sizes, short words, and numeric item codes are never fuzzy.
+  function resolve(query, products) {
+    const original = compile(query);
+    if (!original.terms.length || products.some(p => score(p, original) > 0)) {
+      return original;
+    }
+
+    const lexicon = vocabulary(products);
+    const choices = [];
+    for (let index = 0; index < original.terms.length; index++) {
+      const term = original.terms[index];
+      if (!/^[a-z]{5,}$/.test(term)) continue;
+      for (const [word, meta] of lexicon) {
+        if (term === word) continue;
+        const maxDistance = meta.brand && term.length >= 8 && word.length >= 8 ? 2 : 1;
+        if (maxDistance === 2 && term.slice(0, 3) !== word.slice(0, 3)) continue;
+        const distance = typoDistance(term, word, maxDistance);
+        if (distance === 0 || distance > maxDistance) continue;
+        const terms = original.terms.slice();
+        terms[index] = word;
+        const candidate = { terms, normalized: original.normalized };
+        if (products.some(p => score(p, candidate) > 0)) {
+          choices.push({ from: term, to: word, index, distance, brand: meta.brand, terms });
+        }
+      }
+    }
+
+    choices.sort((a, b) => a.distance - b.distance || Number(b.brand) - Number(a.brand));
+    if (!choices.length) return original;
+
+    // Two equally plausible correction targets are ambiguous: return nothing
+    // rather than silently showing a different product.
+    const best = choices[0];
+    if (choices.some(c => c !== best && c.distance === best.distance &&
+        c.brand === best.brand)) return original;
+    return {
+      terms: best.terms,
+      normalized: original.normalized,
+      correction: { from: best.from, to: best.to }
+    };
+  }
+
+  const api = Object.freeze({ compile, resolve, score, normalize });
   if (root) root.StoreCatalogSearch = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : null);
