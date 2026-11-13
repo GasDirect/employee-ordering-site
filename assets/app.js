@@ -178,11 +178,14 @@
   }
 
   function filteredProducts(ignoreCategory = false) {
-    const query = window.StoreCatalogSearch.compile(state.search);
+    const eligible = state.catalog.filter(product =>
+      (state.retailer === 'all' || product.retailerKey === state.retailer) &&
+      (ignoreCategory || state.category === 'all' || product.category === state.category)
+    );
+    const query = window.StoreCatalogSearch.resolve(state.search, eligible);
+    if (!ignoreCategory) state.searchCorrection = query.correction || null;
     const matches = [];
-    state.catalog.forEach((product, index) => {
-      if (state.retailer !== 'all' && product.retailerKey !== state.retailer) return;
-      if (!ignoreCategory && state.category !== 'all' && product.category !== state.category) return;
+    eligible.forEach((product, index) => {
       const relevance = window.StoreCatalogSearch.score(product, query);
       if (relevance > 0) matches.push({ product, relevance, index });
     });
@@ -211,6 +214,7 @@
     if (state.retailer !== 'all') bits.push(retailerLabel(state.retailer));
     if (state.category !== 'all') bits.push(state.category);
     if (state.search) bits.push(`“${state.search}”`);
+    if (state.searchCorrection) bits.push(`Corrected “${state.searchCorrection.from}” → “${state.searchCorrection.to}”`);
     el.filterSummary.textContent = bits.join(' · ');
     el.resetFilters.hidden = !bits.length;
 

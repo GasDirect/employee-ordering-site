@@ -6,7 +6,7 @@ const search = require('../assets/search.js');
 const products = require('../data/products.json').products.filter(p => p.active !== false);
 
 function find(query) {
-  const compiled = search.compile(query);
+  const compiled = search.resolve(query, products);
   return products.filter(product => search.score(product, compiled) > 0);
 }
 
@@ -60,12 +60,50 @@ test('Product number searches remain exact, including leading zeroes', () => {
   assert.ok(!includes('1385746988', 'sams-026'));
 });
 
-test('Typing a prefix works, without speculative typo correction', () => {
+test('Typing a prefix continues to work', () => {
   assert.ok(includes('Mount', 'sams-030'));
-  assert.equal(find('Gatoraid').length, 0);
 });
 
 test('Empty search leaves products available for normal browsing', () => {
   assert.ok(search.score(products[0], search.compile('')) > 0);
   assert.ok(search.score(products[0], search.compile('  ')) > 0);
+});
+
+test('Brand typos recover only when ordinary search has no results', () => {
+  assert.ok(includes('Gatoraid', 'sams-153'));
+  assert.ok(includes('Gatoraid 24 pack', 'sams-154'));
+  assert.ok(includes('Monstor', 'sams-033'));
+  assert.ok(find('Monstor').some(p => p.brand === 'Monster'));
+  assert.ok(find('Pepsy').some(p => p.brand === 'Pepsi'));
+  assert.ok(includes('Mnoster', 'sams-033')); // adjacent transposition
+  assert.equal(search.resolve('Gatoraid', products).correction?.to, 'gatorade');
+});
+
+test('Exact queries keep priority and do not add approximate brands', () => {
+  assert.equal(search.resolve('Pepsi', products).correction, undefined);
+  assert.equal(search.resolve('Coke Zero', products).correction, undefined);
+  assert.ok(!find('Coke Zero').some(p => p.brand === 'Diet Coke'));
+  assert.ok(find('Coke').every(p => p.brand === 'Coca-Cola' || p.brand === 'Diet Coke'));
+  assert.ok(find('Pepsi').every(p => p.brand !== 'Mountain Dew'));
+});
+
+test('Short words and item numbers are never autocorrected', () => {
+  assert.equal(search.resolve('Coka', products).correction, undefined);
+  assert.equal(search.resolve('Zreo', products).correction, undefined);
+  assert.equal(search.resolve('1385746988', products).correction, undefined);
+  assert.equal(search.resolve('24 pak', products).correction, undefined);
+  assert.ok(!includes('12 pack', 'walmart-051'));
+});
+
+test('Ambiguous misspellings are left alone', () => {
+  const synthetic = [
+    {brand: 'Baking', productName: 'Baking Mix', packCount: '1Pk', individualSize:'12 oz.'},
+    {brand: 'Taking', productName: 'Taking Mix', packCount: '1Pk', individualSize:'12 oz.'}
+  ];
+  assert.equal(search.resolve('Making', synthetic).correction, undefined);
+});
+
+test('Words outside the actual catalog are never guessed from a dictionary', () => {
+  assert.equal(search.resolve('qwertyuiop', products).correction, undefined);
+  assert.equal(find('qwertyuiop').length, 0);
 });
